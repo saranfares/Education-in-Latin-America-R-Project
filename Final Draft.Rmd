@@ -1,0 +1,84 @@
+---
+title: "Final"
+date: "5/7/2018"
+output: html_document
+---
+
+```{r mapGeneral}
+library(tidyverse)
+library(maps)
+library(readr)
+library(ggplot2)
+
+world <- map_data("world")
+data <- read_csv("CompleteData.csv")
+data_2016 <- read_csv("CompleteData_2016.csv")
+
+reduced_data_2016 <- filter(data_2016, data_2016$`Series Code`=="SE.PRM.CMPT.ZS")
+reduced_data_2016$`2016 [YR2016]` <- as.numeric(reduced_data_2016$`2016 [YR2016]`)
+reduced_data_2016$long <- as.numeric(reduced_data_2016$long)
+reduced_data_2016$lat <- as.numeric(reduced_data_2016$lat)
+
+g<-ggplot()+
+  geom_tile(data=reduced_data_2016,
+            aes(x=long, y=lat,fill=reduced_data_2016$`2016 [YR2016]`),
+            width=5, height=5,alpha=.5)+
+  scale_fill_distiller(palette="Spectral")+
+  theme_void()
+
+
+g <- g+geom_path(data = world, aes(x = long, y = lat, group = group))
+
+g + coord_map(xlim=c(-97,-33),ylim=c(-60,14))
+
+
+```
+
+```{r adjustedPrimaryNetEnrolmentRate_byCountry}
+# SE.PRM.TENR is the variable we will using. varied by male and female: SE.PRM.TENR.FE, SE.PRM.TENR.MA
+# we are using five countries-- Bolivia, Chile, Colombia, Peru, Venezuela
+data_all_years <- read_csv("CompleteData.csv")
+
+both_genders_PrimNetEnrollment <- filter(data_all_years, data_all_years$`Series Code`=="SE.PRM.TENR")
+male_PrimNetEnrollment <- filter(data_all_years, data_all_years$`Series Code`=="SE.PRM.TENR.MA")
+female_PrimNetEnrollment <- filter(data_all_years, data_all_years$`Series Code`=="SE.PRM.TENR.FE")
+
+
+# If they wanna see all years,  then we can do a line graph. 
+
+
+# Otherwise we do year by year as bar graphs... based on what year they pick
+# HERE WE CAN ASK USER WHAT YEAR THEY WOULD LIKE??
+# INPUT YEAR BELOW
+# whatever user selects
+# THIS IS JUST AN EXAMPLE PLOTTING: DONE WITH JUST 2011!
+#men by country
+title_lab= "Net Enrolment Rate in Primary School For Men by Country in 2011" # figure out how to add year value here...
+ggplot(male_PrimNetEnrollment, aes(x=male_PrimNetEnrollment$`Country`, y=male_PrimNetEnrollment$current_year, fill=male_PrimNetEnrollment$`Country`))+geom_bar(stat="identity", position="dodge")+xlab("Country")+ylab("Adjusted Enrolment Rate ")+ggtitle(title_lab)+ scale_fill_manual(values = c("darkgreen", "blue2", "yellow1", "red", "navyblue" ), name = "Country")
+
+#women by country
+title_lab= "Net Enrolment Rate in Primary School For Women by Country in 2011" # figure out how to add year value here...
+ggplot(female_PrimNetEnrollment, aes(x=female_PrimNetEnrollment$`Country`, y=female_PrimNetEnrollment$current_year, fill=female_PrimNetEnrollment$`Country`))+geom_bar(stat="identity", position="dodge")+xlab("Country")+ylab("Adjusted Enrolment Rate ")+ggtitle(title_lab)+ scale_fill_manual(values = c("darkgreen", "blue2", "yellow1", "red", "navyblue" ), name = "Country")
+
+
+#both genders by country
+title_lab= "Net Enrolment Rate in Primary School For Both Genders by Country in " # figure out how to add year value here...
+ggplot(both_genders_PrimNetEnrollment, aes(x=both_genders_PrimNetEnrollment$`Country`, y=both_genders_PrimNetEnrollment$2011, fill=both_genders_PrimNetEnrollment$`Country`))+geom_bar(stat="identity", position="dodge")+xlab("Country")+ylab("Adjusted Enrolment Rate ")+ggtitle(title_lab)+ scale_fill_manual(values = c("darkgreen", "blue2", "yellow1", "red", "navyblue" ), name = "Country")
+
+
+##### HERE WE WILL DO ALL YEARS BY USING A LINE PLOT
+colnames(both_genders_PrimNetEnrollment)[5] <- "2011"
+colnames(both_genders_PrimNetEnrollment)[6] <- "2012"
+colnames(both_genders_PrimNetEnrollment)[7] <- "2013"
+colnames(both_genders_PrimNetEnrollment)[8] <- "2014"
+colnames(both_genders_PrimNetEnrollment)[9] <- "2015"
+colnames(both_genders_PrimNetEnrollment)[10] <- "2016"
+
+head(both_genders_PrimNetEnrollment)
+
+title_lab= "Net Enrolment Rate in Primary School For Both Genders by Year " # figure out how to add year value here...
+ggplot(both_genders_PrimNetEnrollment, group=both_genders_PrimNetEnrollment$`Country`)+ geom_point(aes(x=2011, y=both_genders_PrimNetEnrollment$`2011`, color=both_genders_PrimNetEnrollment$`Country`))+geom_point(aes(x=2012, y=both_genders_PrimNetEnrollment$`2012`, color=both_genders_PrimNetEnrollment$`Country`))+geom_point(aes(x=2013, y=both_genders_PrimNetEnrollment$`2013`, color=both_genders_PrimNetEnrollment$`Country`))+geom_point(aes(x=2014, y=both_genders_PrimNetEnrollment$`2014`, color=both_genders_PrimNetEnrollment$`Country`))+geom_point(aes(x=2015, y=both_genders_PrimNetEnrollment$`2015`, color=both_genders_PrimNetEnrollment$`Country`))+geom_point(aes(x=2016, y=both_genders_PrimNetEnrollment$`2016`, color=both_genders_PrimNetEnrollment$`Country`))+xlab("Year")+ylab("Adjusted Enrolment Rate ")+ggtitle(title_lab)+ scale_fill_manual(values = c("darkgreen", "blue2", "yellow1", "red", "navyblue" ), name = "Country")
+
+
+```
+
